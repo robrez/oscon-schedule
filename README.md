@@ -1,7 +1,7 @@
 # oscon-schedule
 Oscon 2015 schedule using polymer
 
-See a [component page](http://robrez.github.io/oscon-schedule/components/oscon-schedule/demo/index.html)
+See a [live demo](http://robrez.github.io/oscon-schedule/components/oscon-schedule/demo/index.html)
 
 See the (useless) [component page](http://robrez.github.io/oscon-schedule/components/oscon-schedule/index.html)
 
