@@ -1,0 +1,75 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../poly-ical/poly-ical.html">
+
+<dom-module id="oscon-datasource">
+  <style>
+    :host {
+      display: none;
+    }
+  </style>
+
+  <template>
+    <poly-ical
+        id="ical"
+        url="oscon.ics"
+        on-parsed="_calendarLoaded"
+        debounce-duration="500"
+        verbose="true">
+        
+    </poly-ical>
+  </template>
+
+  <script>
+  Polymer({
+    is: 'oscon-datasource',
+
+    properties: {
+      schedule: {
+        type: Object,
+        notify: true
+      }
+    },
+
+    created: function() {
+      console.log("created");
+    },
+
+    _calendarLoaded: function(e) {
+      var groups = {};
+      var schedule = { properties: null, days: [] };
+      var id = 0;
+
+      e.detail.events.forEach(function(item) {
+        var dt = new Date(Date.parse(item.dtstart.value));
+ 
+        var month = dt.getMonth() + 1;
+        var day = dt.getDate();
+        var year = dt.getFullYear();
+
+        var key = year + "-" + month + "-" + day;
+        var group = groups[key];
+        if(group == null) {
+          group = { day: key, date: dt, events: [] };
+          groups[key] = group;
+          schedule.days.push(group);
+        }
+        item.id = id++;
+        group.events.push(item);
+      });
+
+      schedule.days.forEach(function(day) {
+        day.events.sort(function(a, b) {
+          var result = a.dtstart.value.localeCompare(b.dtstart.value);
+          if(result === 0) {
+            return a.summary.localeCompare(b.summary);
+          } else {
+            return result;
+          }
+        });
+      });
+      this.set('schedule', schedule);
+    }
+
+  });
+  </script>
+</html>

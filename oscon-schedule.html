@@ -1,0 +1,401 @@
+<!doctype html>
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-scroll-header-panel/paper-scroll-header-panel.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="date-behaviors.html">
+<link rel="import" href="oscon-datasource.html">
+
+<dom-module id="oscon-schedule">
+  <style is="custom-style">
+    :host {
+      box-sizing: border-box;
+      display: block;
+      position: relative;
+      color: rgba(0,0,0,.87);
+    }
+
+    paper-scroll-header-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background-color: var(--paper-grey-200, #eee);
+
+      --paper-scroll-header-panel-full-header: {
+        background-color: var(--paper-red-500);
+        background-image: url(oreilly.png);
+        background-repeat: no-repeat;
+        background-size: 196px;
+        background-position: center right;
+      };
+
+      --paper-scroll-header-panel-condensed-header: {
+        background-color: var(--paper-cyan-500);
+      };
+    }
+
+    paper-scroll-header-panel.wide {
+      border: solid 1px black;
+      --paper-scroll-header-panel-full-header: {
+        background-size: 256px;
+        background-position: bottom right;
+      };
+    }
+
+    paper-toolbar {
+      background-color: transparent;
+    }
+  
+    .toolbar-row {
+      @apply(--layout);
+      @apply(--layout-horizontal);
+      @apply(--layout-flex);
+      @apply(--layout-center);
+    }
+
+    .content {
+      @apply(--layout);
+      @apply(--layout-vertical);
+      @apply(--layout-flex);
+      @apply(--paper-font-body1);
+      box-sizing: border-box;
+      display: block;
+      position: relative;
+      overflow: auto;
+      padding: 8px;
+    }
+
+    .content.wide {
+      padding: 24px;
+    }
+
+    .card {
+      background-color: white;
+      padding: 0;
+      margin: 24px 0 24px 0;
+      min-width: 200px;
+      border-radius: 2px;
+      @apply(--shadow-elevation-2dp);
+    }
+
+    .wide .card {
+      padding: 24px;
+      margin: 24px;
+    }
+
+    .dayDivider {
+      box-sizing: border-box;
+      padding: 48px 48px 0 48px;
+    }
+
+    .event {
+      padding: 16px;
+    }
+
+    .headline {
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -.012em;
+      line-height: 32px;
+    }
+
+    .body2 {
+      @apply(--paper-font-body2);
+    }
+
+    .caption {
+      @apply(--paper-font-caption);
+    }
+ 
+    .title {
+      @apply(--paper-font-title);
+    }
+
+    .titleContainer {
+      box-sizing: border-box;
+    }
+
+    .nav {
+      height: 256px;
+      box-sizing: border-box;
+      display: block;
+      position: relative;
+    }
+
+    .header {
+      @apply(--paper-font-title);
+    }
+
+    paper-icon-button.action {
+      /*color: var(--paper-green-500);*/
+      color: #fff;
+    }
+
+    paper-icon-button.action:hover {
+      background: rgba(0,0,0,.2);
+      border-radius: 50%;
+    }
+
+    paper-icon-button.favorite {
+      color: var(--paper-red-500);
+    }
+
+    paper-icon-button.action:hover {
+      background: var(--paper-red-200);
+      border-radius: 50%;
+    }
+
+    .favIconContainer {
+      box-sizing: border-box;
+      @apply(--layout-center);
+      height: 48px;
+      min-width: 48px;
+    }
+
+    .favIconContainer>paper-icon-button {
+      margin-right: 8px;
+    }
+
+    .field {
+      background-color: #fff;
+      border: 1px solid #eee;
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+      height: 40px;
+    }
+
+    .field paper-icon-button {
+      color: var(--google-grey-700);
+      fill: var(--google-grey-700);
+      margin: 0 8px;
+    }
+
+    .field input {
+      @apply(--paper-font-subhead);
+      outline: 0;
+      border: none;
+      margin-left: 20px;
+    }
+  </style>
+
+  <template>
+    <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+    <oscon-datasource schedule="{{schedule}}">
+    </oscon-datasource>
+
+    <paper-scroll-header-panel class$="{{_computeHeaderPanelClass(wide)}}"condenses header-height="256" condensed-header-height="112">
+
+      <paper-toolbar class="nav paper-header medium-tall">
+          <div hidden$="{{searchMode}}" class="toolbar-row">
+            <div class="header">Oscon 2015 Schedule</div>
+            <span class="flex"></span>
+            <paper-icon-button on-tap="_toggleSearch" class="action" icon="search" alt="arrow-back" title="arrow-back"></paper-icon-button>
+          </div>
+
+          <div hidden$="{{!searchMode}}" class="toolbar-row">
+            <div class="flex center horizontal layout bottom field">
+              <paper-icon-button on-tap="_toggleSearch" class="action" icon="arrow-back" alt="back" title="back"></paper-icon-button>
+              <input id="searchInput" value="{{searchTerm::input}}" class="flex"></input>
+              <paper-icon-button on-tap="_clearSearch" class="action" icon="clear" alt="clear" title="clear"></paper-icon-button>
+            </div>
+          </div>
+
+          <paper-tabs class="bottom self-end layout flex" selected="{{selected}}" scrollable>
+            <template is="dom-repeat" items="[[schedule.days]]" as="calendar">
+              <paper-tab>[[formatDate(calendar.date)]]</paper-tab>
+            </template>
+            <paper-tab>All</paper-tab>
+            <paper-tab>Favorites</paper-tab>
+          </paper-tabs>
+      </paper-toolbar>
+
+      <div class$="{{_computeContentClass(wide)}}">
+        <div class="stuff center-justified layout">
+          <div class="searchInfo" hidden$="{{!searchTerm.length}}">
+            <span class="title">Showing results for "<span>[[searchTerm]]<span>"</span>
+          </div>
+          <template id="dayRepeater" is="dom-repeat" items="[[schedule.days]]" as="calendar" index-as="scheduleIndex">
+            <section hidden$="{{_pageMatch(calendar, selected)}}">
+              <div hidden$="{{!_showDayDividers(selected)}}" class="dayDivider">
+                <span class="title">[[formatDate(calendar.date)]]</span>
+              </div>
+              <div class="card">
+                <template is="dom-repeat" items="[[_filterEvents(selected, calendar.events, searchTerm)]]" as="event" row-index="[[scheduleIndex]]" index-as="eventIndex">
+                  <div class="event">
+                    <div class="layout flex horizontal center">
+                      <div class="favIconContainer">
+                        <paper-icon-button 
+                            data-row-index$="[[scheduleIndex]]"
+                            on-tap="_toggleFavorite"
+                            class$="{{_computeFavoriteClass(favorites, event.id)}}"
+                            icon="favorite"
+                            alt="heart"
+                            title="heart">
+                        </paper-icon-button>
+                      </div>
+                      <div class="titleContainer layout flex">
+                        <div class="title"><span>[[event.summary]]</span></div>
+                        <div class="body2">[[formatRange(event.dtstart.value, event.dtend.value)]]</div>
+                      </div>
+                    </div>
+                    <p>
+                      <span>[[event.description]]</span>
+                      <span hidden$="[[!event.url]]">
+                        <a href="[[event.url]]">More</a>
+                      </span>
+                    </p>
+                  </div>
+                </template>
+              </div>
+            </section>
+          </template>
+        </div>
+      </div>
+
+    </paper-scroll-header-panel>
+
+  </template>
+
+
+  <script>
+  
+  Polymer({
+    is: 'oscon-schedule',
+
+    properties: {
+      selected: {
+        type: Number,
+        notify: true
+      },
+
+      searchMode: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      searchTerm: {
+        type: String,
+        notify: true,
+        value: ""
+      },
+
+      favorites: {
+        type: Object,
+        notify: true,
+        value: function() { return {}; }
+      }
+    },
+
+    behaviors: [
+      DateBehaviors.Formatter
+    ],
+
+    ready: function() {
+      this.set('selected', 0);
+    },
+
+    _pageMatch: function(item, selected) {
+      if(selected >= this.schedule.days.length) {
+        return false;
+      } else {
+        return this.schedule.days[selected].day !== item.day;
+      }
+    },
+
+    _showDayDividers: function(selected) {
+      return selected >= this.schedule.days.length;
+    },
+
+    _isFavorites: function(selected) {
+      return selected === this.schedule.days.length + 1;
+    },
+
+    _computeHeaderPanelClass: function(wide) {
+      return wide ? "wide" : "";
+    },
+
+    _computeContentClass: function(wide) {
+      return wide ? "content wide" : "content";
+    },
+
+    _clearSearch: function() {
+      this.set('searchTerm', "");
+    },
+ 
+    _toggleSearch: function() {
+      var searchMode = !this.searchMode;
+      this.set('searchMode', searchMode);
+      if(searchMode) {
+        this.$.searchInput.focus();
+      }
+    },
+ 
+    _filterEvents: function(selectedPage, events, searchTerm) {
+      searchTerm = searchTerm.toLowerCase();
+      var isFavs = this._isFavorites(selectedPage);
+      if(isFavs) {
+        var favs = this.favorites;
+        events = events.filter(function(item) {
+          return favs["" + item.id];
+        });
+      }
+      if(searchTerm && searchTerm.length > 0) {
+        events = events.filter(function(item) {
+          if(!item.searchString) {
+            item.searchString = 
+                item.summary.toLowerCase()
+                + item.description.toLowerCase();
+          }
+          return item.searchString.indexOf(searchTerm) !== -1;
+        });
+      }
+      return events;
+    },
+
+    _computeFavoriteClass: function(favorites, id) {
+      if(favorites["" + id]) {
+        return "favorite";
+      } else {
+        return "";
+      }
+    },
+
+    _toggleFavorite: function(e, detail, sender) {
+      var item = e.model.event;
+      //var fav = item.favorite || false;
+      //var path = "schedule.days." + e.model.scheduleIndex + ".events." + e.model.eventIndex + ".favorite";
+      //this.set(path, !fav);
+      /*if(this.favorites["" + item.id]) {
+          delete this.favorites["" + item.id];
+      } else {
+          this.favorites["" + item.id] = true;
+      }*/
+
+      /* I think deep path notify/set/observe has a bug
+         none of the approaches I'd like to take are working
+         so i'm replacing the entire collection :(((  */
+
+      var val = this.favorites["" + item.id] || false;
+      this.favorites["" + item.id] = !val;
+      var newFavs = {};
+      var favs = this.favorites;
+      Object.keys(favs).forEach(function(key) {
+        var kv = favs[key];
+        if(kv) {
+          newFavs[key] = favs[key];
+        }
+      });
+      //this.set("favorites." + item.id, !val);
+      this.set("favorites", newFavs);
+    }
+
+  });
+  </script>
+</dom-module>

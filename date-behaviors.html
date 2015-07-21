@@ -1,0 +1,49 @@
+<script>
+  var DateBehaviors = DateBehaviors || {};
+  DateBehaviors.Formatter = {
+
+    getDay: function(dt) {
+      var dayConst = dt.getDay();
+      switch(dayConst) {
+        case 0: return "Sun";
+        case 1: return "Mon";
+        case 2: return "Tues";
+        case 3: return "Wed";
+        case 4: return "Thu";
+        case 5: return "Fri";
+        case 6: return "Sat";
+      }
+      return "?";
+    },
+
+    formatDate: function(dt) {
+      var result = this.getDay(dt)
+          + " "
+          + (dt.getMonth() + 1)
+          + "/"
+          + dt.getDate();
+      return result;
+    },
+
+    formatTime: function(dt) {
+      var mins = dt.getMinutes();
+      var result = dt.getHours()
+          + ":"
+          + (mins < 10 ? "0" + mins : mins)
+      return result;
+    },
+
+    formatRange: function(v1, v2) {
+      //figure out the "T" in the timestamp - maybe fix poly-ical
+      var dt1 = new Date(Date.parse(v1.replace("T", " ")));
+      var dt2 = new Date(Date.parse(v2.replace("T", " ")));
+      var result = this.formatDate(dt1)
+          + ", "
+          + this.formatTime(dt1)
+          + " - "
+          + this.formatTime(dt2);
+      return result;
+    }
+
+  };
+</script>

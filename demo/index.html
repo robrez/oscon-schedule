@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Oscon 2014</title>
+
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../paper-styles/paper-styles.html">
+    <link rel="import" href="../oscon-schedule.html">
+
+    <style is="custom-style">
+  
+    body {
+      font-family: 'Roboto', 'Noto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #eee;
+    }
+
+    #schedule {
+      @apply(--layout);
+      @apply(--layout-vertical);
+      @apply(--layout-flex);
+    }
+
+    </style>
+
+  </head>
+  <body class="layout vertical fullbleed">
+      <oscon-schedule id="schedule" class="layout vertical flex">
+      </oscon-schedule>
+  </body>
+
+
+</html>
