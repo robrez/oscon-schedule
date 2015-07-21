@@ -1,7 +1,9 @@
 # oscon-schedule
 Oscon 2015 schedule using polymer
 
-See the [component page](http://robrez.github.io/oscon-schedule/components/oscon-schedule/index.html)
+See a [component page](http://robrez.github.io/oscon-schedule/components/oscon-schedule/demo/index.html)
+
+See the (useless) [component page](http://robrez.github.io/oscon-schedule/components/oscon-schedule/index.html)
 
 Install with bower:
 `bower install --save oscon-schedule`
@@ -14,4 +16,5 @@ This was just for a bit of fun. If I were to take it a few steps further, here i
 - Follow the polymer starter kit pattern for web apps
 - Make the header less ugly
 - Break up the component a bit more
+- Utilize neon animated pages for nice transitions between tabs
 
